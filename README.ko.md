@@ -223,22 +223,120 @@ npm run build
 | `content_publish` | Instagram과 Threads에 동시 게시 |
 | `analytics_report` | 통합 분석 리포트 생성 |
 
-## Access Token 발급 방법
+## 설정 가이드
 
-### Instagram
+### 1단계: Meta Developer 앱 생성
 
-1. [developers.facebook.com](https://developers.facebook.com)에서 Meta 앱을 생성합니다
-2. "Instagram Graph API" 제품을 추가합니다
-3. Instagram 비즈니스 또는 크리에이터 계정을 연결합니다
-4. Graph API Explorer에서 필요한 권한으로 token을 생성합니다
-5. `meta_exchange_token`을 사용하여 장기 token(60일)으로 변환합니다
+모든 플랫폼(Instagram, Threads)에 Meta Developer 앱이 필요합니다.
 
-### Threads
+1. [developers.facebook.com](https://developers.facebook.com)에 로그인합니다
+2. **"My Apps"** → **"Create App"** 클릭
+3. **"Other"** → **"Business"** (또는 개인 용도면 "None") 선택
+4. 앱 이름을 입력하고 생성
 
-1. [developers.facebook.com](https://developers.facebook.com)에서 Meta 앱을 생성합니다
-2. "Threads API" 제품을 추가합니다
-3. 인가 플로우를 완료하여 access token을 발급받습니다
-4. `meta_exchange_token`을 사용하여 장기 token으로 변환합니다
+**`META_APP_ID`**와 **`META_APP_SECRET`**은 **App Settings → Basic**에서 확인할 수 있습니다.
+
+### 2단계: Instagram 설정
+
+> **Instagram 비즈니스 또는 크리에이터 계정**이 필요합니다. Instagram 앱 → 설정 → 계정 유형에서 무료로 전환 가능합니다.
+
+1. Meta 앱에서 **"제품 추가"** → **"Instagram Graph API"** 추가
+2. **"Instagram Graph API" → "설정"**에서 Facebook 페이지를 통해 Instagram 비즈니스 계정 연결
+3. [Graph API Explorer](https://developers.facebook.com/tools/explorer/) 열기
+   - 앱 선택
+   - 권한 추가: `instagram_basic`, `instagram_content_publish`, `instagram_manage_comments`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`
+   - **"Generate Access Token"** 클릭 후 인가
+4. 생성된 토큰은 단기 토큰(~1시간)입니다. 장기 토큰(~60일)으로 교환:
+   ```
+   GET https://graph.facebook.com/v21.0/oauth/access_token
+     ?grant_type=fb_exchange_token
+     &client_id=YOUR_APP_ID
+     &client_secret=YOUR_APP_SECRET
+     &fb_exchange_token=SHORT_LIVED_TOKEN
+   ```
+   또는 설정 후 `meta_exchange_token` 도구를 사용할 수 있습니다.
+5. **Instagram User ID 조회** — 토큰으로 다음을 호출합니다:
+   ```
+   GET https://graph.facebook.com/v21.0/me/accounts?access_token=YOUR_TOKEN
+   ```
+   Facebook 페이지 목록이 반환됩니다. 각 페이지에서 연결된 Instagram 계정을 조회합니다:
+   ```
+   GET https://graph.facebook.com/v21.0/{page-id}?fields=instagram_business_account&access_token=YOUR_TOKEN
+   ```
+   `instagram_business_account.id`가 **`INSTAGRAM_USER_ID`**입니다 (숫자 ID, 예: `17841400123456789`).
+
+### 3단계: Threads 설정
+
+> **모든 Threads 계정**에서 사용 가능합니다 (개인, 비즈니스 무관).
+
+1. Meta 앱에서 **"제품 추가"** → **"Threads API"** 추가
+2. **"Threads API" → "설정"**:
+   - **"Roles"**에서 본인의 Threads 계정을 **Threads Tester**로 추가
+   - Threads 앱에서 초대 수락: **설정 → 계정 → 웹사이트 권한 → 초대**
+3. 인가 URL을 생성합니다:
+   ```
+   https://threads.net/oauth/authorize
+     ?client_id=YOUR_APP_ID
+     &redirect_uri=YOUR_REDIRECT_URI
+     &scope=threads_basic,threads_content_publish,threads_manage_insights,threads_manage_replies,threads_read_replies
+     &response_type=code
+   ```
+   - 로컬 테스트의 경우 redirect URI로 `https://localhost/` 사용 (App Settings → Threads API → Redirect URIs에 설정)
+4. 인가 후, 코드를 access token으로 교환합니다:
+   ```
+   POST https://graph.threads.net/oauth/access_token
+   Content-Type: application/x-www-form-urlencoded
+
+   client_id=YOUR_APP_ID
+   &client_secret=YOUR_APP_SECRET
+   &grant_type=authorization_code
+   &redirect_uri=YOUR_REDIRECT_URI
+   &code=AUTHORIZATION_CODE
+   ```
+5. 장기 토큰(~60일)으로 교환합니다:
+   ```
+   GET https://graph.threads.net/access_token
+     ?grant_type=th_exchange_token
+     &client_secret=YOUR_APP_SECRET
+     &access_token=SHORT_LIVED_TOKEN
+   ```
+6. **Threads User ID 조회** — 토큰으로 다음을 호출합니다:
+   ```
+   GET https://graph.threads.net/v1.0/me?fields=id,username&access_token=YOUR_TOKEN
+   ```
+   `id` 필드가 **`THREADS_USER_ID`**입니다 (숫자 ID, 예: `1234567890`).
+
+### 4단계: 환경변수 설정
+
+사용하는 플랫폼의 변수만 설정하면 됩니다:
+
+```bash
+# Instagram (비즈니스/크리에이터 계정 필요)
+INSTAGRAM_ACCESS_TOKEN=EAAxxxxxxx...     # 2단계에서 발급받은 장기 토큰
+INSTAGRAM_USER_ID=17841400123456789      # 2단계 5번에서 조회한 숫자 ID
+
+# Threads (모든 계정 사용 가능)
+THREADS_ACCESS_TOKEN=THQWxxxxxxx...      # 3단계에서 발급받은 장기 토큰
+THREADS_USER_ID=1234567890               # 3단계 6번에서 조회한 숫자 ID
+
+# Meta App (토큰 관리 및 웹훅용)
+META_APP_ID=123456789012345              # App Settings → Basic에서 확인
+META_APP_SECRET=abcdef0123456789abcdef   # App Settings → Basic에서 확인
+```
+
+### 토큰 갱신
+
+Access token은 약 60일 후 만료됩니다. 만료 전에 갱신하세요:
+
+- **Instagram**: 현재 유효한 토큰으로 `meta_exchange_token` 사용
+- **Threads**: `meta_refresh_token` 사용 또는 다음 호출:
+  ```
+  GET https://graph.threads.net/refresh_access_token
+    ?grant_type=th_refresh_token
+    &access_token=CURRENT_LONG_LIVED_TOKEN
+  ```
+
+`meta_debug_token`으로 언제든지 토큰 상태를 확인할 수 있습니다.
 
 ## 라이선스
 

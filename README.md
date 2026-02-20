@@ -218,22 +218,120 @@ You only need to set the variables for the platforms you use. For example, if yo
 | `content_publish` | Cross-post content to Instagram and Threads |
 | `analytics_report` | Generate combined analytics report |
 
-## Getting Access Tokens
+## Setup Guide
 
-### Instagram
+### Step 1: Create a Meta Developer App
 
-1. Create a Meta App at [developers.facebook.com](https://developers.facebook.com)
-2. Add the "Instagram Graph API" product
-3. Connect an Instagram Business or Creator account
-4. Generate a token in the Graph API Explorer with required permissions
-5. Use `meta_exchange_token` to convert to a long-lived token (60 days)
+All platforms (Instagram, Threads) require a Meta Developer App.
 
-### Threads
+1. Go to [developers.facebook.com](https://developers.facebook.com) and log in
+2. Click **"My Apps"** → **"Create App"**
+3. Select **"Other"** → **"Business"** (or "None" for personal use)
+4. Enter an app name and create
 
-1. Create a Meta App at [developers.facebook.com](https://developers.facebook.com)
-2. Add the "Threads API" product
-3. Complete the authorization flow to get an access token
-4. Use `meta_exchange_token` to convert to a long-lived token
+Your **`META_APP_ID`** and **`META_APP_SECRET`** are in **App Settings → Basic**.
+
+### Step 2: Instagram Setup
+
+> Requires an **Instagram Business or Creator account**. Switch for free in Instagram app → Settings → Account type.
+
+1. In your Meta App, go to **"Add Products"** → add **"Instagram Graph API"**
+2. Go to **"Instagram Graph API" → "Settings"** and connect your Instagram Business account via a Facebook Page
+3. Open the [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
+   - Select your app
+   - Add permissions: `instagram_basic`, `instagram_content_publish`, `instagram_manage_comments`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`
+   - Click **"Generate Access Token"** and authorize
+4. The generated token is short-lived (~1 hour). Exchange it for a long-lived token (~60 days):
+   ```
+   GET https://graph.facebook.com/v21.0/oauth/access_token
+     ?grant_type=fb_exchange_token
+     &client_id=YOUR_APP_ID
+     &client_secret=YOUR_APP_SECRET
+     &fb_exchange_token=SHORT_LIVED_TOKEN
+   ```
+   Or use the `meta_exchange_token` tool after setup.
+5. **Get your Instagram User ID** — call this with your token:
+   ```
+   GET https://graph.facebook.com/v21.0/me/accounts?access_token=YOUR_TOKEN
+   ```
+   This returns your Facebook Pages. For each page, get the linked Instagram account:
+   ```
+   GET https://graph.facebook.com/v21.0/{page-id}?fields=instagram_business_account&access_token=YOUR_TOKEN
+   ```
+   The `instagram_business_account.id` is your **`INSTAGRAM_USER_ID`** (a numeric ID like `17841400123456789`).
+
+### Step 3: Threads Setup
+
+> Works with **any Threads account** (personal or business).
+
+1. In your Meta App, go to **"Add Products"** → add **"Threads API"**
+2. Go to **"Threads API" → "Settings"**:
+   - Add your Threads account as a **Threads Tester** under "Roles"
+   - Accept the invitation in the Threads app: **Settings → Account → Website permissions → Invites**
+3. Generate an authorization URL:
+   ```
+   https://threads.net/oauth/authorize
+     ?client_id=YOUR_APP_ID
+     &redirect_uri=YOUR_REDIRECT_URI
+     &scope=threads_basic,threads_content_publish,threads_manage_insights,threads_manage_replies,threads_read_replies
+     &response_type=code
+   ```
+   - For local testing, use `https://localhost/` as redirect URI (configure in App Settings → Threads API → Redirect URIs)
+4. After authorization, exchange the code for an access token:
+   ```
+   POST https://graph.threads.net/oauth/access_token
+   Content-Type: application/x-www-form-urlencoded
+
+   client_id=YOUR_APP_ID
+   &client_secret=YOUR_APP_SECRET
+   &grant_type=authorization_code
+   &redirect_uri=YOUR_REDIRECT_URI
+   &code=AUTHORIZATION_CODE
+   ```
+5. Exchange for a long-lived token (~60 days):
+   ```
+   GET https://graph.threads.net/access_token
+     ?grant_type=th_exchange_token
+     &client_secret=YOUR_APP_SECRET
+     &access_token=SHORT_LIVED_TOKEN
+   ```
+6. **Get your Threads User ID** — call this with your token:
+   ```
+   GET https://graph.threads.net/v1.0/me?fields=id,username&access_token=YOUR_TOKEN
+   ```
+   The `id` field is your **`THREADS_USER_ID`** (a numeric ID like `1234567890`).
+
+### Step 4: Configure Environment Variables
+
+Set only the variables for the platforms you use:
+
+```bash
+# Instagram (requires Business/Creator account)
+INSTAGRAM_ACCESS_TOKEN=EAAxxxxxxx...     # Long-lived token from Step 2
+INSTAGRAM_USER_ID=17841400123456789      # Numeric ID from Step 2.5
+
+# Threads (any account)
+THREADS_ACCESS_TOKEN=THQWxxxxxxx...      # Long-lived token from Step 3
+THREADS_USER_ID=1234567890               # Numeric ID from Step 3.6
+
+# Meta App (for token management & webhooks)
+META_APP_ID=123456789012345              # From App Settings → Basic
+META_APP_SECRET=abcdef0123456789abcdef   # From App Settings → Basic
+```
+
+### Token Renewal
+
+Access tokens expire after ~60 days. Refresh before expiration:
+
+- **Instagram**: Use `meta_exchange_token` with the current valid token
+- **Threads**: Use `meta_refresh_token` or call:
+  ```
+  GET https://graph.threads.net/refresh_access_token
+    ?grant_type=th_refresh_token
+    &access_token=CURRENT_LONG_LIVED_TOKEN
+  ```
+
+You can check token status anytime with `meta_debug_token`.
 
 ## License
 
