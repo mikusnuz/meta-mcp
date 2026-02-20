@@ -1,15 +1,25 @@
 {
   "name": "@mikusnuz/meta-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "MCP server for Instagram Graph API, Threads API & Meta platform management",
   "type": "module",
   "bin": {
     "meta-mcp": "dist/index.js"
   },
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "files": [
-    "dist"
+    "dist/**/*"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
@@ -36,7 +46,7 @@
     "url": "https://github.com/mikusnuz/meta-mcp/issues"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
