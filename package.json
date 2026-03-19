@@ -1,6 +1,7 @@
 {
   "name": "@mikusnuz/meta-mcp",
   "version": "2.0.0",
+  "mcpName": "io.github.mikusnuz/meta",
   "description": "MCP server for Instagram Graph API, Threads API & Meta platform management",
   "type": "module",
   "bin": {

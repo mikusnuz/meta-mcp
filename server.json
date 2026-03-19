@@ -1,0 +1,64 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.mikusnuz/meta",
+  "description": "MCP server for Instagram Graph API v25.0, Threads API & Meta platform — 57 tools for publishing, comments, insights, hashtags, DMs, and token management",
+  "repository": {
+    "url": "https://github.com/mikusnuz/meta-mcp",
+    "source": "github"
+  },
+  "version": "2.0.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@mikusnuz/meta-mcp",
+      "version": "2.0.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "INSTAGRAM_ACCESS_TOKEN",
+          "description": "Instagram Graph API access token",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true
+        },
+        {
+          "name": "INSTAGRAM_USER_ID",
+          "description": "Instagram Business/Creator account ID",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "THREADS_ACCESS_TOKEN",
+          "description": "Threads API access token",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true
+        },
+        {
+          "name": "THREADS_USER_ID",
+          "description": "Threads user ID",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "META_APP_ID",
+          "description": "Meta App ID for token/webhook tools",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
+        },
+        {
+          "name": "META_APP_SECRET",
+          "description": "Meta App Secret for token/webhook tools",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
