@@ -156,9 +156,7 @@ export function registerThreadsPublishingTools(server: McpServer, client: MetaCl
           if (item.alt_text) params.alt_text = item.alt_text;
           const { data: child } = await client.threads("POST", `/${client.threadsUserId}/threads`, params);
           const childId = (child as { id: string }).id;
-          if (item.type === "VIDEO") {
-            await waitForThreadsContainer(client, childId);
-          }
+          await waitForThreadsContainer(client, childId);
           childIds.push(childId);
         }
         const carouselParams: Record<string, unknown> = {
