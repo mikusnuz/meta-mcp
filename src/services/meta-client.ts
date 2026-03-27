@@ -48,9 +48,17 @@ export class MetaClient {
       }
       url += `?${qs.toString()}`;
     } else {
-      const body: Record<string, unknown> = { access_token: token, ...params };
-      init.headers = { "Content-Type": "application/json" };
-      init.body = JSON.stringify(body);
+      const qs = new URLSearchParams();
+      qs.set("access_token", token);
+      if (params) {
+        for (const [k, v] of Object.entries(params)) {
+          if (v !== undefined && v !== null && v !== "") {
+            qs.set(k, String(v));
+          }
+        }
+      }
+      init.headers = { "Content-Type": "application/x-www-form-urlencoded" };
+      init.body = qs.toString();
     }
 
     const res = await fetch(url, init);
