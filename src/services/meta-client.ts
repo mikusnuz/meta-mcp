@@ -1,7 +1,7 @@
 import { MetaConfig } from "../config.js";
 import { RateLimit } from "../types.js";
 
-const IG_BASE = "https://graph.facebook.com/v25.0";
+const IG_BASE = "https://graph.instagram.com/v25.0";
 const THREADS_BASE = "https://graph.threads.net/v1.0";
 
 interface ClientResponse {
