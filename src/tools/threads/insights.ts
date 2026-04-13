@@ -9,11 +9,11 @@ export function registerThreadsInsightTools(server: McpServer, client: MetaClien
     "Get insights/analytics for a specific Threads post (views, likes, replies, reposts, quotes, clicks).",
     {
       post_id: z.string().describe("Threads post ID"),
-      metric: z.string().optional().describe("Comma-separated metrics (default: views,likes,replies,reposts,quotes,clicks)"),
+      metric: z.string().optional().describe("Comma-separated metrics (default: views,likes,replies,reposts,quotes)"),
     },
     async ({ post_id, metric }) => {
       try {
-        const m = metric || "views,likes,replies,reposts,quotes,clicks";
+        const m = metric || "views,likes,replies,reposts,quotes";
         const { data, rateLimit } = await client.threads("GET", `/${post_id}/insights`, { metric: m });
         return { content: [{ type: "text", text: JSON.stringify({ ...data as object, _rateLimit: rateLimit }, null, 2) }] };
       } catch (error) {
@@ -27,7 +27,7 @@ export function registerThreadsInsightTools(server: McpServer, client: MetaClien
     "threads_get_user_insights",
     "Get account-level Threads insights (views, likes, replies, reposts, quotes, clicks, followers, follower demographics).",
     {
-      metric: z.string().describe("Comma-separated metrics: views,likes,replies,reposts,quotes,clicks,followers_count,follower_demographics"),
+      metric: z.string().describe("Comma-separated metrics: views,likes,replies,reposts,quotes,followers_count,follower_demographics"),
       since: z.string().optional().describe("Start date (Unix timestamp)"),
       until: z.string().optional().describe("End date (Unix timestamp)"),
     },

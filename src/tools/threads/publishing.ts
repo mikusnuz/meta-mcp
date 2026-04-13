@@ -46,7 +46,7 @@ export function registerThreadsPublishingTools(server: McpServer, client: MetaCl
           params.gif_attachment = JSON.stringify({ gif_id, provider: gif_provider });
         }
         if (alt_text) params.alt_text = alt_text;
-        if (is_spoiler) params.is_spoiler_media = true;
+        if (is_spoiler) params.is_spoiler = true;
         const { data: container } = await client.threads("POST", `/${client.threadsUserId}/threads`, params);
         const containerId = (container as { id: string }).id;
         const { data, rateLimit } = await client.threads("POST", `/${client.threadsUserId}/threads_publish`, {
@@ -80,7 +80,7 @@ export function registerThreadsPublishingTools(server: McpServer, client: MetaCl
         if (topic_tag) params.topic_tag = topic_tag;
         if (quote_post_id) params.quote_post_id = quote_post_id;
         if (alt_text) params.alt_text = alt_text;
-        if (is_spoiler) params.is_spoiler_media = true;
+        if (is_spoiler) params.is_spoiler = true;
         const { data: container } = await client.threads("POST", `/${client.threadsUserId}/threads`, params);
         const containerId = (container as { id: string }).id;
         const { data, rateLimit } = await client.threads("POST", `/${client.threadsUserId}/threads_publish`, {
@@ -114,7 +114,7 @@ export function registerThreadsPublishingTools(server: McpServer, client: MetaCl
         if (topic_tag) params.topic_tag = topic_tag;
         if (quote_post_id) params.quote_post_id = quote_post_id;
         if (alt_text) params.alt_text = alt_text;
-        if (is_spoiler) params.is_spoiler_media = true;
+        if (is_spoiler) params.is_spoiler = true;
         const { data: container } = await client.threads("POST", `/${client.threadsUserId}/threads`, params);
         const containerId = (container as { id: string }).id;
         await waitForThreadsContainer(client, containerId);
@@ -223,7 +223,7 @@ export function registerThreadsPublishingTools(server: McpServer, client: MetaCl
     async () => {
       try {
         const { data, rateLimit } = await client.threads("GET", `/${client.threadsUserId}/threads_publishing_limit`, {
-          fields: "quota_usage,config",
+          fields: "quota_usage",
         });
         return { content: [{ type: "text", text: JSON.stringify({ ...data as object, _rateLimit: rateLimit }, null, 2) }] };
       } catch (error) {
