@@ -4,6 +4,16 @@ import { MetaClient } from "../../services/meta-client.js";
 import { buildInstagramStoryParams } from "../../services/api-contracts.js";
 import { waitForContainerStatus } from "../../services/container-polling.js";
 
+const disclosureOptions = {
+  is_ai_generated: z.boolean().optional().describe("Apply the AI info label to the published media"),
+  is_paid_partnership: z.boolean().optional().describe("Apply the Paid partnership label"),
+  branded_content_sponsor_ids: z.array(z.string()).max(2).optional().describe("Instagram user IDs of up to two brand partners"),
+};
+
+const trialParams = z.object({
+  graduation_strategy: z.enum(["MANUAL", "SS_PERFORMANCE"]),
+}).optional().describe("Publish as a Trial Reel; graduate manually or automatically based on performance");
+
 /** Poll container status until FINISHED or error (video upload) */
 async function waitForContainer(
   client: MetaClient,
@@ -36,10 +46,11 @@ export function registerIgPublishingTools(server: McpServer, client: MetaClient)
       location_id: z.string().optional().describe("Facebook Page location ID"),
       user_tags: z.string().optional().describe("JSON array of user tags: [{username, x, y}]"),
       alt_text: z.string().optional().describe("Alt text for accessibility"),
+      ...disclosureOptions,
     },
-    async ({ image_url, caption, location_id, user_tags, alt_text }) => {
+    async ({ image_url, caption, location_id, user_tags, alt_text, ...disclosures }) => {
       try {
-        const params: Record<string, unknown> = { image_url };
+        const params: Record<string, unknown> = { image_url, ...disclosures };
         if (caption) params.caption = caption;
         if (location_id) params.location_id = location_id;
         if (user_tags) params.user_tags = user_tags;
@@ -61,18 +72,20 @@ export function registerIgPublishingTools(server: McpServer, client: MetaClient)
   // ─── ig_publish_video ────────────────────────────────────────
   server.tool(
     "ig_publish_video",
-    "Publish a video to Instagram feed. Waits for video processing before publishing.",
+    "Publish a standalone video as a Reel and share it to the feed. Waits for video processing before publishing.",
     {
       video_url: z.string().url().describe("Public HTTPS URL of the video"),
       caption: z.string().optional().describe("Post caption"),
       thumb_offset: z.number().optional().describe("Thumbnail offset in ms"),
       location_id: z.string().optional().describe("Facebook Page location ID"),
+      trial_params: trialParams,
+      ...disclosureOptions,
     },
-    async ({ video_url, caption, thumb_offset, location_id }) => {
+    async ({ video_url, caption, thumb_offset, location_id, ...options }) => {
       try {
-        const params: Record<string, unknown> = { video_url, media_type: "VIDEO" };
+        const params: Record<string, unknown> = { video_url, media_type: "REELS", share_to_feed: true, ...options };
         if (caption) params.caption = caption;
-        if (thumb_offset) params.thumb_offset = thumb_offset;
+        if (thumb_offset !== undefined) params.thumb_offset = thumb_offset;
         if (location_id) params.location_id = location_id;
         const { data: container } = await client.ig("POST", `/${client.igUserId}/media`, params);
         const containerId = (container as { id: string }).id;
@@ -99,8 +112,9 @@ export function registerIgPublishingTools(server: McpServer, client: MetaClient)
       })).min(2).max(10).describe("Array of media items"),
       caption: z.string().optional().describe("Post caption"),
       location_id: z.string().optional().describe("Facebook Page location ID"),
+      ...disclosureOptions,
     },
-    async ({ items, caption, location_id }) => {
+    async ({ items, caption, location_id, ...disclosures }) => {
       try {
         // Step 1: Create child containers
         const childIds: string[] = [];
@@ -124,6 +138,7 @@ export function registerIgPublishingTools(server: McpServer, client: MetaClient)
         const carouselParams: Record<string, unknown> = {
           media_type: "CAROUSEL",
           children: childIds.join(","),
+          ...disclosures,
         };
         if (caption) carouselParams.caption = caption;
         if (location_id) carouselParams.location_id = location_id;
@@ -151,14 +166,16 @@ export function registerIgPublishingTools(server: McpServer, client: MetaClient)
       share_to_feed: z.boolean().optional().describe("Also share to feed (default true)"),
       thumb_offset: z.number().optional().describe("Thumbnail offset in ms"),
       alt_text: z.string().optional().describe("Alt text for accessibility"),
+      trial_params: trialParams,
+      ...disclosureOptions,
     },
-    async ({ video_url, caption, cover_url, share_to_feed, thumb_offset, alt_text }) => {
+    async ({ video_url, caption, cover_url, share_to_feed, thumb_offset, alt_text, ...options }) => {
       try {
-        const params: Record<string, unknown> = { video_url, media_type: "REELS" };
+        const params: Record<string, unknown> = { video_url, media_type: "REELS", ...options };
         if (caption) params.caption = caption;
         if (cover_url) params.cover_url = cover_url;
         if (share_to_feed !== undefined) params.share_to_feed = share_to_feed;
-        if (thumb_offset) params.thumb_offset = thumb_offset;
+        if (thumb_offset !== undefined) params.thumb_offset = thumb_offset;
         if (alt_text) params.alt_text = alt_text;
         const { data: container } = await client.ig("POST", `/${client.igUserId}/media`, params);
         const containerId = (container as { id: string }).id;

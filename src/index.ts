@@ -2,6 +2,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { createRequire } from "node:module";
 import { loadConfig, MetaConfig } from "./config.js";
 import { MetaClient } from "./services/meta-client.js";
 
@@ -32,9 +33,11 @@ import { registerInstagramResources } from "./resources/instagram.js";
 import { registerThreadsResources } from "./resources/threads.js";
 import { registerPrompts } from "./prompts/index.js";
 
+const { version } = createRequire(import.meta.url)("../package.json");
+
 const server = new McpServer({
   name: "meta-mcp",
-  version: "2.1.0",
+  version,
 });
 
 const config = loadConfig();
@@ -80,7 +83,7 @@ main().catch((err) => {
 export function createSandboxServer() {
   const sandbox = new McpServer({
     name: "meta-mcp",
-    version: "2.1.0",
+    version,
   });
 
   const mockConfig: MetaConfig = {

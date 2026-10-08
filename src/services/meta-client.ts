@@ -41,7 +41,7 @@ export class MetaClient {
 
     if (method === "GET" || method === "DELETE") {
       const qs = new URLSearchParams();
-      qs.set("access_token", token);
+      if (token) qs.set("access_token", token);
       if (params) {
         for (const [k, v] of Object.entries(params)) {
           if (v !== undefined && v !== null && v !== "") {
@@ -127,6 +127,10 @@ export class MetaClient {
       path,
       params
     );
+  }
+
+  async threadsOembed(params: Record<string, unknown>): Promise<ClientResponse> {
+    return this.request(THREADS_GRAPH_BASE, "", "GET", "/oembed", params);
   }
 
   async meta(

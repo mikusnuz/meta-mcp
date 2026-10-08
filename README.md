@@ -33,6 +33,13 @@ Tell your AI assistant things like:
 - **2 prompts**: Cross-platform content publishing, analytics report
 - Rate limit tracking via `x-app-usage` header
 
+## What's New in v2.2.0
+
+- Fixed Instagram business discovery and collaboration invite requests. Use `media_id` and `accept` for invites; `invite_id` and `action` remain supported aliases.
+- Account insights support `metric_type`, `breakdown`, and demographic `timeframe`. Metrics such as `views` select `total_value` automatically.
+- Standalone videos now publish as Reels shared to the feed. Photo, Reel, and carousel publishing support AI info and paid-partnership labels; Reels also support `trial_params`.
+- Public Threads oEmbed works without a token. Includes the token refresh, Instagram Messaging, publishing, and reply handling fixes since v2.1.1.
+
 ## What's New in v2.1.0
 
 - **Graph API v26.0**: Upgraded from v25.0 (no deprecated fields/endpoints from the v26.0 changelog were in use)
