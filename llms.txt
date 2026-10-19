@@ -59,6 +59,8 @@ Only set variables for the platforms you use.
 - meta_get_webhook_subscriptions — List current webhook subscriptions
 
 ### Instagram — Publishing (6)
+All Instagram publishing tools wait for container processing, including image Stories and carousel children/parents. Errors or a five-minute processing timeout prevent publication.
+
 - ig_publish_photo — Publish a photo post (supports alt_text)
 - ig_publish_video — Publish a video post
 - ig_publish_carousel — Publish a carousel/album (2-10 items, alt_text per item)

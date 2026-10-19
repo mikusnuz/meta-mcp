@@ -8,15 +8,14 @@ export function registerIgMentionTools(server: McpServer, client: MetaClient): v
     "ig_get_mentioned_comments",
     "Get comments where the account was @mentioned. Returns the media and comment details.",
     {
-      comment_id: z.string().describe("Comment ID from a mention notification"),
-      fields: z.string().optional().describe("Fields to return (default: id,text,timestamp,username,media)"),
+      comment_id: z.string().regex(/^\d+$/).describe("Comment ID from a mention notification"),
+      fields: z.string().optional().describe("Mentioned comment fields (default: id,text,timestamp,media{id,media_url,media_type})"),
     },
     async ({ comment_id, fields }) => {
       try {
-        const f = fields || "id,text,timestamp,username,media{id,media_url,media_type}";
-        const { data, rateLimit } = await client.ig("GET", `/${client.igUserId}/mentioned_comment`, {
-          comment_id,
-          fields: f,
+        const f = fields || "id,text,timestamp,media{id,media_url,media_type}";
+        const { data, rateLimit } = await client.ig("GET", `/${client.igUserId}`, {
+          fields: `mentioned_comment.comment_id(${comment_id}){${f}}`,
         });
         return { content: [{ type: "text", text: JSON.stringify({ ...data as object, _rateLimit: rateLimit }, null, 2) }] };
       } catch (error) {

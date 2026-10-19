@@ -14,7 +14,7 @@ const trialParams = z.object({
   graduation_strategy: z.enum(["MANUAL", "SS_PERFORMANCE"]),
 }).optional().describe("Publish as a Trial Reel; graduate manually or automatically based on performance");
 
-/** Poll container status until FINISHED or error (video upload) */
+/** Wait for image, video, or carousel processing before publishing. */
 async function waitForContainer(
   client: MetaClient,
   containerId: string,
@@ -58,6 +58,7 @@ export function registerIgPublishingTools(server: McpServer, client: MetaClient)
         // Step 1: Create container
         const { data: container } = await client.ig("POST", `/${client.igUserId}/media`, params);
         const containerId = (container as { id: string }).id;
+        await waitForContainer(client, containerId);
         // Step 2: Publish
         const { data, rateLimit } = await client.ig("POST", `/${client.igUserId}/media_publish`, {
           creation_id: containerId,
@@ -129,9 +130,7 @@ export function registerIgPublishingTools(server: McpServer, client: MetaClient)
           }
           const { data: child } = await client.ig("POST", `/${client.igUserId}/media`, params);
           const childId = (child as { id: string }).id;
-          if (item.type === "VIDEO") {
-            await waitForContainer(client, childId);
-          }
+          await waitForContainer(client, childId);
           childIds.push(childId);
         }
         // Step 2: Create carousel container
@@ -144,6 +143,7 @@ export function registerIgPublishingTools(server: McpServer, client: MetaClient)
         if (location_id) carouselParams.location_id = location_id;
         const { data: carousel } = await client.ig("POST", `/${client.igUserId}/media`, carouselParams);
         const carouselId = (carousel as { id: string }).id;
+        await waitForContainer(client, carouselId);
         // Step 3: Publish
         const { data, rateLimit } = await client.ig("POST", `/${client.igUserId}/media_publish`, {
           creation_id: carouselId,
@@ -203,9 +203,7 @@ export function registerIgPublishingTools(server: McpServer, client: MetaClient)
         const params = buildInstagramStoryParams(media_type, media_url);
         const { data: container } = await client.ig("POST", `/${client.igUserId}/media`, params);
         const containerId = (container as { id: string }).id;
-        if (media_type === "VIDEO") {
-          await waitForContainer(client, containerId);
-        }
+        await waitForContainer(client, containerId);
         const { data, rateLimit } = await client.ig("POST", `/${client.igUserId}/media_publish`, {
           creation_id: containerId,
         });

@@ -33,6 +33,11 @@ Tell your AI assistant things like:
 - **2 prompts**: Cross-platform content publishing, analytics report
 - Rate limit tracking via `x-app-usage` header
 
+## What's New in v2.2.1
+
+- Photos, image Stories, and every carousel child and parent now wait for container processing before publication. Processing errors stop the publish request.
+- Mentioned comments use the Instagram user field expansion with documented default fields.
+
 ## What's New in v2.2.0
 
 - Fixed Instagram business discovery and collaboration invite requests. Use `media_id` and `accept` for invites; `invite_id` and `action` remain supported aliases.
