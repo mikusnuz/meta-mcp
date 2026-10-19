@@ -4,6 +4,7 @@
 
 ## Package
 
+- Requires Node.js 20 or later, including the MCP host's runtime.
 - npm: `@mikusnuz/meta-mcp`
 - Run: `npx @mikusnuz/meta-mcp`
 - GitHub: https://github.com/mikusnuz/meta-mcp

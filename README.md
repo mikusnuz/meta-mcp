@@ -89,6 +89,8 @@ Tell your AI assistant things like:
 
 ## Installation
 
+Requires Node.js 20 or later, including the MCP host's `npx` environment.
+
 ### npx (Recommended)
 
 ```json

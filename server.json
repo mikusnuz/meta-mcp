@@ -6,12 +6,12 @@
     "url": "https://github.com/mikusnuz/meta-mcp",
     "source": "github"
   },
-  "version": "2.2.1",
+  "version": "2.2.2",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@mikusnuz/meta-mcp",
-      "version": "2.2.1",
+      "version": "2.2.2",
       "transport": {
         "type": "stdio"
       },
