@@ -12,8 +12,35 @@ interface ClientResponse {
   rateLimit?: RateLimit;
 }
 
+/**
+ * Graph/Threads pagination URLs embed the caller's access_token. Strip it so
+ * the token never reaches the LLM context; the cursors are enough to paginate.
+ */
+export function stripPagingTokens<T>(value: T): T {
+  if (Array.isArray(value)) {
+    value.forEach(stripPagingTokens);
+  } else if (value && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    for (const [key, child] of Object.entries(obj)) {
+      if ((key === "next" || key === "previous") && typeof child === "string") {
+        try {
+          const url = new URL(child);
+          url.searchParams.delete("access_token");
+          obj[key] = url.toString();
+        } catch {
+          // Not a URL, leave it as is.
+        }
+      } else {
+        stripPagingTokens(child);
+      }
+    }
+  }
+  return value;
+}
+
 export class MetaClient {
   private config: MetaConfig;
+  private pageToken?: string;
 
   constructor(config: MetaConfig) {
     this.config = config;
@@ -70,7 +97,7 @@ export class MetaClient {
       if (data.error) {
         throw new Error(`Meta API error: ${data.error.message} (code ${data.error.code})`);
       }
-      return { data, rateLimit };
+      return { data: stripPagingTokens(data), rateLimit };
     }
     const text = await res.text();
     return { data: text || { success: true }, rateLimit };
@@ -127,6 +154,50 @@ export class MetaClient {
       path,
       params
     );
+  }
+
+  /**
+   * Call the Graph API as the Facebook Page configured in INSTAGRAM_PAGE_ID.
+   * The page access token is resolved from /me/accounts, cached in memory and
+   * never returned to callers.
+   */
+  async page(
+    method: string,
+    path: string,
+    params?: Record<string, unknown>
+  ): Promise<ClientResponse> {
+    const token = await this.getPageToken();
+    try {
+      return await this.request(INSTAGRAM_GRAPH_BASE, token, method, path, params);
+    } catch (error) {
+      const message = (error instanceof Error ? error.message : String(error))
+        .split(token)
+        .join("[redacted]");
+      if (/pages_manage_posts|\(#?200\)|"code":\s*200|code 200/.test(message)) {
+        throw new Error(
+          `Missing permission. Publishing to a Facebook Page requires pages_manage_posts on the INSTAGRAM_ACCESS_TOKEN. ${message}`
+        );
+      }
+      throw new Error(message);
+    }
+  }
+
+  private async getPageToken(): Promise<string> {
+    if (this.pageToken) return this.pageToken;
+    const pageId = this.instagramPageId;
+    const { data } = await this.ig("GET", "/me/accounts", {
+      fields: "id,access_token",
+      limit: 100,
+    });
+    const pages = (data as { data?: Array<{ id: string; access_token?: string }> }).data ?? [];
+    const page = pages.find((p) => p.id === pageId);
+    if (!page?.access_token) {
+      throw new Error(
+        `Facebook Page ${pageId} was not found in /me/accounts for INSTAGRAM_ACCESS_TOKEN. Check INSTAGRAM_PAGE_ID and that the token has pages_show_list and pages_manage_posts.`
+      );
+    }
+    this.pageToken = page.access_token;
+    return page.access_token;
   }
 
   async threadsOembed(params: Record<string, unknown>): Promise<ClientResponse> {

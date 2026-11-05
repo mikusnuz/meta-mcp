@@ -25,8 +25,9 @@ Tell your AI assistant things like:
 
 ## Features
 
-- **66 tools** across Instagram (33), Threads (27), and Meta platform (6)
+- **69 tools** across Instagram (33), Facebook Page (3), Threads (27), and Meta platform (6)
 - **Instagram**: Publish photos/videos/reels/stories/carousels with alt text, manage comments, view insights, search hashtags, handle DMs, manage collaboration invites
+- **Facebook Page**: Publish text/link posts, photos, and videos to the Page linked to the Instagram account
 - **Threads**: Publish text/images/videos/carousels with polls, GIFs, topic tags, link attachments, alt text, spoiler flags, ghost posts, reply approvals, location tags, and Instagram Stories cross-sharing; manage replies and pending reply approvals; search posts and locations; profile/mentions discovery; oEmbed; view insights; delete posts
 - **Meta**: Token exchange/refresh/debug, webhook management
 - **2 resources**: Instagram profile, Threads profile
@@ -147,7 +148,7 @@ npm run build
 | `INSTAGRAM_ACCESS_TOKEN` | For Instagram | Instagram Graph API access token |
 | `INSTAGRAM_USER_ID` | For Instagram | Instagram Business/Creator account ID |
 | `INSTAGRAM_MESSAGING_ACCESS_TOKEN` | For Instagram DMs | Page access token for Instagram Messaging with Facebook Login |
-| `INSTAGRAM_PAGE_ID` | For Instagram DMs | Facebook Page ID linked to the Instagram professional account |
+| `INSTAGRAM_PAGE_ID` | For Instagram DMs and Facebook Page tools | Facebook Page ID linked to the Instagram professional account |
 | `THREADS_ACCESS_TOKEN` | For Threads | Threads API access token |
 | `THREADS_USER_ID` | For Threads | Threads user ID |
 | `META_APP_ID` | For token/webhook tools | Meta App ID |
@@ -235,6 +236,16 @@ You only need to set the variables for the platforms you use. For example, if yo
 | `ig_get_messages` | Get messages in a conversation |
 | `ig_send_message` | Send a DM |
 | `ig_get_message` | Get message details |
+
+### Facebook Page — Publishing (3)
+
+These tools post as the Page in `INSTAGRAM_PAGE_ID`. They look up the Page access token with `GET /me/accounts?fields=id,access_token` using `INSTAGRAM_ACCESS_TOKEN` and cache it in memory. The Page token is never returned in a tool response. The user token needs `pages_show_list` and `pages_manage_posts`.
+
+| Tool | Description |
+|------|-------------|
+| `fb_publish_page_post` | Publish a text post with an optional link |
+| `fb_publish_page_video` | Publish a video from a public URL with a description |
+| `fb_publish_page_photo` | Publish a photo from a public URL with a caption |
 
 ### Threads — Publishing (7)
 
@@ -338,7 +349,7 @@ Your **`META_APP_ID`** and **`META_APP_SECRET`** are in **App Settings → Basic
 2. Go to **"Instagram Graph API" → "Settings"** and connect your Instagram Business account via a Facebook Page
 3. Open the [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
    - Select your app
-   - Add permissions: `instagram_basic`, `instagram_content_publish`, `instagram_manage_comments`, `instagram_manage_insights`, `instagram_manage_contents`, `instagram_manage_messages`, `pages_show_list`, `pages_read_engagement`, `pages_manage_metadata`
+   - Add permissions: `instagram_basic`, `instagram_content_publish`, `instagram_manage_comments`, `instagram_manage_insights`, `instagram_manage_contents`, `instagram_manage_messages`, `pages_show_list`, `pages_read_engagement`, `pages_manage_metadata`, `pages_manage_posts` (only for the Facebook Page tools)
    - Click **"Generate Access Token"** and authorize
 4. The generated token is short-lived (~1 hour). Exchange it for a long-lived token (~60 days):
    ```
