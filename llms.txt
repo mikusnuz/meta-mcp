@@ -49,7 +49,7 @@ Only set variables for the platforms you use.
 - Threads: Any account
 - Meta token/webhook tools: Meta Developer App
 
-## Tools (66)
+## Tools (69)
 
 ### Meta Platform (6)
 - meta_exchange_token — Exchange short-lived token for long-lived (~60 days)
@@ -107,6 +107,11 @@ All Instagram publishing tools wait for container processing, including image St
 - ig_get_messages — Get messages in a conversation
 - ig_send_message — Send a DM
 - ig_get_message — Get message details
+
+### Facebook Page — Publishing (3)
+- fb_publish_page_post — Publish a text post with an optional link to the Page in INSTAGRAM_PAGE_ID (needs pages_manage_posts)
+- fb_publish_page_video — Publish a video from a public URL
+- fb_publish_page_photo — Publish a photo from a public URL
 
 ### Threads — Publishing (7)
 - threads_publish_text — Publish text post (polls, GIFs, link attachments, topic tags, quote, spoiler, ghost posts, reply approvals, location, IG Stories cross-share)

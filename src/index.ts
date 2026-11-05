@@ -18,6 +18,9 @@ import { registerIgHashtagTools } from "./tools/instagram/hashtags.js";
 import { registerIgMentionTools } from "./tools/instagram/mentions.js";
 import { registerIgMessagingTools } from "./tools/instagram/messaging.js";
 
+// Facebook Page tools
+import { registerFbPublishingTools } from "./tools/facebook/publishing.js";
+
 // Threads tools
 import { registerThreadsPublishingTools } from "./tools/threads/publishing.js";
 import { registerThreadsMediaTools } from "./tools/threads/media.js";
@@ -52,6 +55,7 @@ registerIgProfileTools(server, client);
 registerIgHashtagTools(server, client);
 registerIgMentionTools(server, client);
 registerIgMessagingTools(server, client);
+registerFbPublishingTools(server, client);
 registerThreadsPublishingTools(server, client);
 registerThreadsMediaTools(server, client);
 registerThreadsReplyTools(server, client);
@@ -106,6 +110,7 @@ export function createSandboxServer() {
   registerIgHashtagTools(sandbox, mockClient);
   registerIgMentionTools(sandbox, mockClient);
   registerIgMessagingTools(sandbox, mockClient);
+  registerFbPublishingTools(sandbox, mockClient);
   registerThreadsPublishingTools(sandbox, mockClient);
   registerThreadsMediaTools(sandbox, mockClient);
   registerThreadsReplyTools(sandbox, mockClient);
